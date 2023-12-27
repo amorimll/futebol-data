@@ -8,22 +8,26 @@ const port = 3000;
 const urlTeams = "https://fbref.com/pt/comps/24/Serie-A-Estatisticas"
 
 const fetchAllTeams = async () => {
-  const response = await axios.get(urlTeams)
+  try {
+    const response = await axios.get(urlTeams)
 
-  const $ = load(response.data);
-  const teamsRows = $('table.stats_table#results2023241_overall tbody tr');
-  const teamsFetched = []
-
-  teamsRows.each((index, element) => {
-    const link = $(element).find('td[data-stat="team"] a');
-    const href = link.attr('href');
-
-    href.split("/")[4].split("-")[0]
-    const team = getPlayers(`https://fbref.com/${href}`, href.split("/")[4].split("-")[0])
-    teamsFetched.push(team)
-  });
-
-  return teamsFetched
+    const $ = load(response.data);
+    const teamsRows = $('table.stats_table#results2023241_overall tbody tr');
+    const teamsFetched = []
+  
+    teamsRows.each((index, element) => {
+      const link = $(element).find('td[data-stat="team"] a');
+      const href = link.attr('href');
+  
+      href.split("/")[4].split("-")[0]
+      const team = getPlayers(`https://fbref.com/${href}`, href.split("/")[4].split("-")[0])
+      teamsFetched.push(team)
+    });
+  
+    return teamsFetched
+  } catch(error) {
+    return `Erro ao acessar a página: ${error.message}`;
+  }
 }
 
 const getPlayers = async (urlTeam, teamName) => {
@@ -51,16 +55,15 @@ const getPlayers = async (urlTeam, teamName) => {
       teamsData[teamName] = playersData
       return teamsData
   } catch (error) {
-    console.error(`Erro ao acessar a página: ${error.message}`);
+    return `Erro ao acessar a página: ${error.message}`;
   }
 }
 
 app.get('/', async (req, res) => {
   const teams = await fetchAllTeams();
-  console.log(teams)
   res.json(teams);
 });
 
 app.listen(port, () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
+  console.log(`Servidor rodando em ${port}`);
 });
